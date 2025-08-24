@@ -1,0 +1,124 @@
+﻿using Evacuation.Core.DTOs.Responses;
+using Evacuation.Core.Interfaces.Infrastructure.Database;
+using Evacuation.Core.Interfaces.Services;
+using Evacuation.Domain.Entities;
+using Evacuation.Shared.Utilities;
+
+namespace Evacuation.Core.Services
+{
+    public class EvacuationPlanService : IEvacuationPlanService
+    {
+        private readonly IUnitOfWork _unitOfWork;
+
+        public EvacuationPlanService(IUnitOfWork unitOfWork)
+        {
+            _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        }
+
+        public async Task<List<EvacuationPlanResponse>> GeneratePlans()
+        {
+            var plans = new List<EvacuationPlanResponse>();
+
+            var zones = await _unitOfWork.EvacuationZones.GetAllAsync();
+            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();     
+            
+            if (!zones.Any())
+                throw new ArgumentException("Not found zones.");
+
+            if (!vehicles.Any())
+                throw new ArgumentException("Not found vehicles.");            
+
+            var zonesSort = zones.OrderByDescending(z => z.UrgencyLevel).ToList();
+            var vehicleIdsUnavailable = new HashSet<int>();
+            foreach(var zone in zonesSort)
+            {
+                var vehiclesAvailable = vehicles.Where(v => !vehicleIdsUnavailable.Contains(v.VehicleId)).ToList();
+                var bestVehicle = SelectBestVehicleForZone(vehiclesAvailable, zone);
+                //zone.NumberOfPeople -= bestVehicle.Capacity;
+                vehicleIdsUnavailable.Add(bestVehicle.VehicleId);
+
+                double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, bestVehicle.Latitude, bestVehicle.Longitude);
+                double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, bestVehicle.Speed);
+
+                var plan = new EvacuationPlanResponse
+                {
+                    ZoneId = zone.ZoneId,
+                    VehicleId = bestVehicle.VehicleId,
+                    EstimatedArrivalMinutes = Convert.ToInt32(eta),
+                    NumberOfPeople = bestVehicle.Capacity <= zone.NumberOfPeople ? bestVehicle.Capacity : zone.NumberOfPeople
+                };
+                plans.Add(plan);
+            }
+
+            return plans;
+        }
+
+        public async Task ClearPlansAsync()
+        {
+
+        }
+
+        private VehicleEntity SelectBestVehicleForZone(List<VehicleEntity> vehiclesAvailable, EvacuationZoneEntity zone)
+        {
+            if (vehiclesAvailable.Count == 0)
+                return null;
+
+            var groupedVehicleByCapacity = vehiclesAvailable
+                .GroupBy(v => v.Capacity)
+                .OrderBy(g => g.Key).ToList();
+
+            VehicleEntity bestVehicle = null;
+            foreach(var vehicleGroup in groupedVehicleByCapacity)
+            {
+                if (vehicleGroup.Key >= zone.NumberOfPeople)
+                {
+                    double minDistance = double.MaxValue;
+                    double minEta = double.MaxValue;
+                    foreach(var vehicle in vehicleGroup)
+                    {
+                        double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
+                        double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
+
+                        if (distance < minDistance || (distance == minDistance && eta < minEta))
+                        {
+                            bestVehicle = vehicle;
+                            minDistance = distance;
+                            minEta = eta;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            if (bestVehicle == null)
+            {
+                double minDistance = double.MaxValue;
+                double minEta = double.MaxValue;
+                foreach(var vehicle in vehiclesAvailable.OrderByDescending(v => v.Capacity).ToList())
+                {
+                    double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
+                    double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
+
+                    if (distance < minDistance || (distance == minDistance && eta < minEta))
+                    {
+                        bestVehicle = vehicle;
+                        minDistance = distance;
+                        minEta = eta;
+                    }
+                }
+            }
+
+            return bestVehicle; 
+        }
+
+        //private List<VehicleEntity> GetVehiclesOrderByDistance(List<VehicleEntity> vehicles, List<EvacuationZoneEntity> zones)
+        //{
+        //    var vehiclesSort = new List<EvacuationZoneEntity>();
+        //    foreach (var vehicle in vehicles)
+        //    {
+
+        //    }
+        //}
+    }
+}
