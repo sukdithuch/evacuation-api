@@ -10,6 +10,7 @@ namespace Evacuation.Core.Interfaces.Infrastructure.Database
     public interface IGenericRepository<T> where T : IBaseEntity
     {
         Task<List<T>> GetAllAsync();
+        Task<List<T>> GetAllActiveAsync();
         Task<T?> GetByIdAsync(int id);
         Task<T> AddAsync(T entity);
         T Update(T entity);

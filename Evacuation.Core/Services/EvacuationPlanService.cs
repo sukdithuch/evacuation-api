@@ -20,7 +20,7 @@ namespace Evacuation.Core.Services
             var plans = new List<EvacuationPlanResponse>();
 
             var zones = await _unitOfWork.EvacuationZones.GetAllAsync();
-            var vehicles = await _unitOfWork.Vehicles.GetAllAsync();     
+            var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync();     
             
             if (!zones.Any())
                 throw new ArgumentException("Not found zones.");
@@ -63,51 +63,83 @@ namespace Evacuation.Core.Services
             if (vehiclesAvailable.Count == 0)
                 return null;
 
-            var groupedVehicleByCapacity = vehiclesAvailable
-                .GroupBy(v => v.Capacity)
-                .OrderBy(g => g.Key).ToList();
-
-            VehicleEntity bestVehicle = null;
-            foreach(var vehicleGroup in groupedVehicleByCapacity)
-            {
-                if (vehicleGroup.Key >= zone.NumberOfPeople)
+            VehicleEntity bestVehicle = vehiclesAvailable
+                .Select(v => new
                 {
-                    double minDistance = double.MaxValue;
-                    double minEta = double.MaxValue;
-                    foreach(var vehicle in vehicleGroup)
-                    {
-                        double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
-                        double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
+                    Vehicle = v,
+                    DistanceKm = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, v.Latitude, v.Longitude)
+                })
+                .OrderBy(x => x.DistanceKm)
+                .ThenBy(x => GeoUtils.EstimatedTravelTimeMinutes(x.DistanceKm, x.Vehicle.Speed))
+                .ThenBy(x => Math.Abs(x.Vehicle.Capacity - zone.NumberOfPeople))
+                .FirstOrDefault()?.Vehicle;
+            //var vehicleOrderByDistanceAndTime = 
 
-                        if (distance < minDistance || (distance == minDistance && eta < minEta))
-                        {
-                            bestVehicle = vehicle;
-                            minDistance = distance;
-                            minEta = eta;
-                        }
-                    }
+            //var groupedVehicleByCapacity = vehiclesAvailable
+            //    .GroupBy(v => v.Capacity)
+            //    .OrderBy(g => g.Key).ToList();
 
-                    break;
-                }
-            }
+            //VehicleEntity bestVehicle = null;
+            //foreach(var vehicleGroup in groupedVehicleByCapacity)
+            //{
+            //    if (vehicleGroup.Key >= zone.NumberOfPeople)
+            //    {
+            //        //double minDistance = double.MaxValue;
+            //        //double minEta = double.MaxValue;
+            //        //foreach(var vehicle in vehicleGroup)
+            //        //{
+            //        //    double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
+            //        //    double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
 
-            if (bestVehicle == null)
-            {
-                double minDistance = double.MaxValue;
-                double minEta = double.MaxValue;
-                foreach(var vehicle in vehiclesAvailable.OrderByDescending(v => v.Capacity).ToList())
-                {
-                    double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
-                    double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
+            //        //    if (distance < minDistance || (distance == minDistance && eta < minEta))
+            //        //    {
+            //        //        bestVehicle = vehicle;
+            //        //        minDistance = distance;
+            //        //        minEta = eta;
+            //        //    }
+            //        //}
+            //        bestVehicle = vehicleGroup
+            //            .Select(v => new
+            //            {
+            //                Vehicle = v,
+            //                DistanceKm = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, v.Latitude, v.Longitude)
+            //            })
+            //            .OrderBy(x => x.DistanceKm)
+            //            .ThenBy(x => GeoUtils.EstimatedTravelTimeMinutes(x.DistanceKm, x.Vehicle.Speed))
+            //            .FirstOrDefault()?.Vehicle;
 
-                    if (distance < minDistance || (distance == minDistance && eta < minEta))
-                    {
-                        bestVehicle = vehicle;
-                        minDistance = distance;
-                        minEta = eta;
-                    }
-                }
-            }
+            //        break;
+            //    }
+            //}
+
+            //if (bestVehicle == null)
+            //{
+            //    //bestVehicle = vehiclesAvailable
+            //    //    .Select(v => new
+            //    //    {
+            //    //        Vehicle = v,
+            //    //        DistanceKm = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, v.Latitude, v.Longitude)
+            //    //    })
+            //    //    .OrderByDescending(x => x.Vehicle.Capacity)
+            //    //    .ThenBy(x => x.DistanceKm)
+            //    //    .ThenBy(x => GeoUtils.EstimatedTravelTimeMinutes(x.DistanceKm, x.Vehicle.Speed))
+            //    //    .FirstOrDefault()?.Vehicle;
+
+            //    double minDistance = double.MaxValue;
+            //    double minEta = double.MaxValue;
+            //    foreach (var vehicle in vehiclesAvailable.OrderByDescending(v => v.Capacity).ToList())
+            //    {
+            //        double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, vehicle.Latitude, vehicle.Longitude);
+            //        double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, vehicle.Speed);
+
+            //        if (distance < minDistance || (distance == minDistance && eta < minEta))
+            //        {
+            //            bestVehicle = vehicle;
+            //            minDistance = distance;
+            //            minEta = eta;
+            //        }
+            //    }
+            //}
 
             return bestVehicle; 
         }

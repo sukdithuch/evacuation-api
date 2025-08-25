@@ -11,6 +11,7 @@ namespace Evacuation.Core.Interfaces.Services
     public interface IVehicleService
     {
         Task<List<VehicleResponse>> GetVehiclesAsync();
+        Task<List<VehicleResponse>> GetActiveVehiclesAsync();
         Task<VehicleResponse> GetVehicleByIdAsync(int id);
         Task<VehicleResponse> CreateVehicleAsync(VehicleRequest req);
         Task<VehicleResponse> UpdateVehicleAsync(int id, VehicleRequest req);

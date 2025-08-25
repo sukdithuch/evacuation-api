@@ -25,6 +25,12 @@ namespace Evacuation.Core.Services
             return _mapper.Map<List<VehicleResponse>>(vehicles);
         }
 
+        public async Task<List<VehicleResponse>> GetActiveVehiclesAsync()
+        {
+            var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync();
+            return _mapper.Map<List<VehicleResponse>>(vehicles);
+        }
+
         public async Task<VehicleResponse> GetVehicleByIdAsync(int id)
         {
             var existingVehicle = await _unitOfWork.Vehicles.GetByIdAsync(id);

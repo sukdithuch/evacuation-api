@@ -23,6 +23,11 @@ namespace Evacuation.Infrastructure.Database.Repositories
             return await _context.Set<T>().ToListAsync();
         }
 
+        public async Task<List<T>> GetAllActiveAsync()
+        {
+            return await _context.Set<T>().Where(x => x.Active).ToListAsync();
+        }
+
         public async Task<T?> GetByIdAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id);
