@@ -15,15 +15,15 @@ namespace Evacuation.Infrastructure.Database.Configurations
         {
             builder.HasKey(e => e.ZoneId);
 
-            builder
-                .Property(e => e.CreatedAt)
-                .IsRequired()
-                .HasMaxLength(20);
+            //builder
+            //    .Property(e => e.CreatedAt)
+            //    .IsRequired()
+            //    .HasMaxLength(20);
 
-            builder
-                .Property(e => e.UpdatedAt)
-                .IsRequired()
-                .HasMaxLength(20);
+            //builder
+            //    .Property(e => e.UpdatedAt)
+            //    .IsRequired()
+            //    .HasMaxLength(20);
 
             builder.ToTable("EvacuationZones");
         }

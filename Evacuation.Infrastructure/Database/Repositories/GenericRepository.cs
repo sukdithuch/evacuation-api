@@ -35,8 +35,8 @@ namespace Evacuation.Infrastructure.Database.Repositories
 
         public async Task<T> AddAsync(T entity)
         {
-            entity.CreatedAt = DateTime.UtcNow.ToString("u");
-            entity.UpdatedAt = DateTime.UtcNow.ToString("u");
+            entity.CreatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.UtcNow;
             entity.Active = true;
 
             await _context.Set<T>().AddAsync(entity);
@@ -46,7 +46,7 @@ namespace Evacuation.Infrastructure.Database.Repositories
 
         public T Update(T entity)
         {
-            entity.UpdatedAt += DateTime.UtcNow.ToString("u");
+            entity.UpdatedAt = DateTime.UtcNow;
 
             _context.Set<T>().Update(entity);
 
@@ -55,7 +55,7 @@ namespace Evacuation.Infrastructure.Database.Repositories
 
         public T Remove(T entity)
         {
-            entity.UpdatedAt = DateTime.UtcNow.ToString("u");
+            entity.UpdatedAt = DateTime.UtcNow;
             entity.Active = false;
 
             return entity;

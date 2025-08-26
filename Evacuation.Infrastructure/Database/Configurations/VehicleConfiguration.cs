@@ -21,21 +21,21 @@ namespace Evacuation.Infrastructure.Database.Configurations
                 .IsRequired()
                 .HasMaxLength(20);
 
-            builder
-                .Property(e => e.Status)
-                .IsRequired()
-                .HasConversion<string>()
-                .HasMaxLength(20);
+            //builder
+            //    .Property(e => e.Status)
+            //    .IsRequired()
+            //    .HasConversion<string>()
+            //    .HasMaxLength(20);
 
-            builder
-                .Property(e => e.CreatedAt)
-                .IsRequired()
-                .HasMaxLength(20);
+            //builder
+            //    .Property(e => e.CreatedAt)
+            //    .IsRequired()
+            //    .HasMaxLength(20);
 
-            builder
-                .Property(e => e.UpdatedAt)
-                .IsRequired()
-                .HasMaxLength(20);
+            //builder
+            //    .Property(e => e.UpdatedAt)
+            //    .IsRequired()
+            //    .HasMaxLength(20);
 
             builder.ToTable("Vehicles");
         }

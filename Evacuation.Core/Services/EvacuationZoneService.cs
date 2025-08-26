@@ -25,6 +25,12 @@ namespace Evacuation.Core.Services
             return _mapper.Map<List<EvacuationZoneResponse>>(zones);
         }
 
+        public async Task<List<EvacuationZoneResponse>> GetActiveEvacuationZonesAsync()
+        {
+            var zones = await _unitOfWork.EvacuationZones.GetAllActiveAsync();
+            return _mapper.Map<List<EvacuationZoneResponse>>(zones);
+        }
+
         public async Task<EvacuationZoneResponse> GetEvacuationZoneByIdAsync(int id)
         {
             var existingZone = await _unitOfWork.EvacuationZones.GetByIdAsync(id);
@@ -37,6 +43,7 @@ namespace Evacuation.Core.Services
         public async Task<EvacuationZoneResponse> CreateEvacuationZoneAsync(EvacuationZoneRequest req)
         {
             var entity = _mapper.Map<EvacuationZoneEntity>(req);
+            entity.RemainingPeople = entity.NumberOfPeople;
             var addedZone = await _unitOfWork.EvacuationZones.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 

@@ -15,11 +15,11 @@ namespace Evacuation.Core.Mappings
         public MappingProfile() 
         {
             #region Vehicle
-            CreateMap<VehicleRequest, VehicleEntity>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<VehicleStatus>(src.Status)));
+            CreateMap<VehicleRequest, VehicleEntity>();
+            //.ForMember(dest => dest.Status, opt => opt.MapFrom(src => Enum.Parse<VehicleStatus>(src.Status)));
 
-            CreateMap<VehicleEntity, VehicleResponse>()
-                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<VehicleEntity, VehicleResponse>();
+                //.ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
             #endregion
 
             #region EvacuationZone

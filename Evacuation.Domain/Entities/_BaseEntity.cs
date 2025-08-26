@@ -8,8 +8,8 @@ namespace Evacuation.Domain.Entities
 {
     public class BaseEntity : IBaseEntity
     {
-        public string CreatedAt { get; set; }
-        public string UpdatedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public bool Active { get; set; }
     }
 }

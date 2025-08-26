@@ -9,6 +9,9 @@ namespace Evacuation.Domain.Entities
         public double Longitude { get; set; }
         public int NumberOfPeople { get; set; }
         public ZoneUrgencyLevel UrgencyLevel { get; set; }
+        public int TotalEvacuated { get; set; }
+        public int RemainingPeople { get; set; }
+        public int? LastVehicleUsedId { get; set; }
     }
 
     public enum ZoneUrgencyLevel

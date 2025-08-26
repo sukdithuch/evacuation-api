@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -21,8 +22,11 @@ namespace Evacuation.Infrastructure.Database.Migrations
                     Longitude = table.Column<double>(type: "double precision", nullable: false),
                     NumberOfPeople = table.Column<int>(type: "integer", nullable: false),
                     UrgencyLevel = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    UpdatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    TotalEvacuated = table.Column<int>(type: "integer", nullable: false),
+                    RemainingPeople = table.Column<int>(type: "integer", nullable: false),
+                    LastVehicleUsedId = table.Column<int>(type: "integer", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -41,9 +45,9 @@ namespace Evacuation.Infrastructure.Database.Migrations
                     Latitude = table.Column<double>(type: "double precision", nullable: false),
                     Longitude = table.Column<double>(type: "double precision", nullable: false),
                     Speed = table.Column<double>(type: "double precision", nullable: false),
-                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    UpdatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    IsAvailable = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
@@ -61,9 +65,10 @@ namespace Evacuation.Infrastructure.Database.Migrations
                     VehicleId = table.Column<int>(type: "integer", nullable: false),
                     EstimatedArrivalMinutes = table.Column<int>(type: "integer", nullable: false),
                     NumberOfPeople = table.Column<int>(type: "integer", nullable: false),
-                    Status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    CreatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    UpdatedAt = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    Completed = table.Column<bool>(type: "boolean", nullable: false),
+                    CompletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Active = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>

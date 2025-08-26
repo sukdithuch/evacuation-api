@@ -43,6 +43,7 @@ namespace Evacuation.Core.Services
         public async Task<VehicleResponse> CreateVehicleAsync(VehicleRequest req)
         {
             var entity = _mapper.Map<VehicleEntity>(req);
+            entity.IsAvailable = true;
             var addedVehicle = await _unitOfWork.Vehicles.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
@@ -60,7 +61,8 @@ namespace Evacuation.Core.Services
             existingVehicle.Latitude = req.Latitude;
             existingVehicle.Longitude = req.Longitude;
             existingVehicle.Speed = req.Speed;
-            existingVehicle.Status = Enum.Parse<VehicleStatus>(req.Status);
+            //existingVehicle.IsAvailable = req.IsAvailable;
+            //existingVehicle.Status = Enum.Parse<VehicleStatus>(req.Status);
             existingVehicle = _unitOfWork.Vehicles.Update(existingVehicle);
             await _unitOfWork.SaveChangesAsync();
 

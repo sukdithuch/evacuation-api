@@ -15,6 +15,7 @@ namespace Evacuation.Core.DTOs.Responses
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public double Speed { get; set; }
-        public string Status { get; set; }
+        public bool IsAvailable { get; set; }
+        //public string Status { get; set; }
     }
 }
