@@ -28,6 +28,12 @@ namespace Evacuation.Core.Mappings
 
             CreateMap<EvacuationZoneEntity, EvacuationZoneResponse>()
                 .ForMember(dest => dest.UrgencyLevel, opt => opt.MapFrom(src => (int)src.UrgencyLevel));
+
+            CreateMap<EvacuationZoneEntity, EvacuationZoneEntity>();
+            #endregion
+
+            #region EvacuationPlan
+            CreateMap<EvacuationPlanEntity, EvacuationPlanResponse>();
             #endregion
         }
     }

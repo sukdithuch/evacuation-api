@@ -33,7 +33,7 @@ namespace Evacuation.Core.Services
 
         public async Task<VehicleResponse> GetVehicleByIdAsync(int id)
         {
-            var existingVehicle = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var existingVehicle = await _unitOfWork.Vehicles.FindByIdAsync(id);
             if (existingVehicle == null) 
                 throw new ArgumentException($"Vehicle not found.");
 
@@ -52,7 +52,7 @@ namespace Evacuation.Core.Services
 
         public async Task<VehicleResponse> UpdateVehicleAsync(int id, VehicleRequest req)
         {
-            var existingVehicle = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var existingVehicle = await _unitOfWork.Vehicles.FindByIdAsync(id);
             if (existingVehicle == null)
                 throw new ArgumentException($"Vehicle not found.");
 
@@ -71,7 +71,7 @@ namespace Evacuation.Core.Services
 
         public async Task<VehicleResponse> DeleteVehicleAsync(int id)
         {
-            var existingVehicle = await _unitOfWork.Vehicles.GetByIdAsync(id);
+            var existingVehicle = await _unitOfWork.Vehicles.FindByIdAsync(id);
             if (existingVehicle == null)
                 throw new ArgumentException($"Vehicle not found.");
 

@@ -7,6 +7,7 @@ namespace Evacuation.Infrastructure.Caching
     public class CacheService : ICacheService
     {
         private readonly IDistributedCache _distributedCache;
+        private const string AllKeys = "ALL_KEYS";
 
         public CacheService(IDistributedCache distributedCache)
         {
@@ -15,65 +16,65 @@ namespace Evacuation.Infrastructure.Caching
 
         public async Task<T?> GetAsync<T>(string key)
         {
-            try
-            {
-                var cached = await _distributedCache.GetStringAsync(key);
-                if (string.IsNullOrEmpty(cached)) return default;
-                return JsonSerializer.Deserialize<T>(cached);
-            }
-            catch (Exception ex)
-            {
-                return default;
-            }
+            var cached = await _distributedCache.GetStringAsync(key);
+            if (string.IsNullOrEmpty(cached)) return default;
+            return JsonSerializer.Deserialize<T>(cached);
         }
 
         public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
         {
-            try
-            {
-                var options = new DistributedCacheEntryOptions();
+            var options = new DistributedCacheEntryOptions();
 
-                if (expiry.HasValue)
-                    options.SetSlidingExpiration(expiry.Value);
+            if (expiry.HasValue)
+                options.SetSlidingExpiration(expiry.Value);
+            else
+                options.SetSlidingExpiration(TimeSpan.FromDays(1));
 
-                var serialized = JsonSerializer.Serialize(value);
-                await _distributedCache.SetStringAsync(key, serialized);
-                await KeepAllKey(key);
-            }
-            catch (Exception ex)
-            {
-
-            }
+            var serialized = JsonSerializer.Serialize(value);
+            await _distributedCache.SetStringAsync(key, serialized);
+            await AddKeyToIndexAsync(key);
         }
 
         public async Task RemoveAsync(string key)
         {
-            try
+            await _distributedCache.RemoveAsync(key);
+        }
+
+        public async Task<HashSet<string>> GetAllKeysAsync()
+        {
+            return await GetAsync<HashSet<string>>(AllKeys) ?? new HashSet<string>();
+        }
+
+        public async Task ClearAllAsync()
+        {
+            var keys = await GetAllKeysAsync();
+            foreach(var key in keys)
             {
                 await _distributedCache.RemoveAsync(key);
             }
-            catch (Exception ex)
-            {
 
-            }
+            await _distributedCache.RemoveAsync(AllKeys);
         }
 
-        private async Task KeepAllKey(string key)
+        private async Task AddKeyToIndexAsync(string key)
         {
-            string allKey = "ALLKEY";
-            var allKeyValue = await GetAsync<string>(allKey);
-            if (string.IsNullOrEmpty(allKeyValue))
-            {
-                var serialized = JsonSerializer.Serialize(key);
-                await _distributedCache.SetStringAsync(allKey, serialized);
-            }
-            else
-            {
-                // ต้องเช็คซ้ำเพิ่ม
-                allKeyValue += "," + allKeyValue;
-                var serialized = JsonSerializer.Serialize(allKeyValue);
-                await _distributedCache.SetStringAsync(allKey, serialized);
-            }
-        }
+            var keys = await GetAllKeysAsync();
+            keys.Add(key);
+            var serialized = JsonSerializer.Serialize(keys);
+            await _distributedCache.SetStringAsync(AllKeys, serialized);
+
+            //if (allKeyValue?.Any() == false)
+            //{
+            //    var serialized = JsonSerializer.Serialize(key);
+            //    await _distributedCache.SetStringAsync(allKey, serialized);
+            //}
+            //else
+            //{
+            //    // ต้องเช็คซ้ำเพิ่ม
+            //    allKeyValue += "," + allKeyValue;
+            //    var serialized = JsonSerializer.Serialize(allKeyValue);
+            //    await _distributedCache.SetStringAsync(allKey, serialized);
+            //}
+        }        
     }
 }

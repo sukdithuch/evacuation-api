@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,7 +29,12 @@ namespace Evacuation.Infrastructure.Database.Repositories
             return await _context.Set<T>().Where(x => x.Active).ToListAsync();
         }
 
-        public async Task<T?> GetByIdAsync(int id)
+        public async Task<List<T>> FindByAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _context.Set<T>().Where(predicate).ToListAsync();
+        }
+
+        public async Task<T?> FindByIdAsync(int id)
         {
             return await _context.Set<T>().FindAsync(id);
         }
@@ -61,12 +67,16 @@ namespace Evacuation.Infrastructure.Database.Repositories
             return entity;
         }
 
-        //public T RemoveAll(IEnumerable<T> entities)
-        //{
-        //    foreach (var item in entities)
-        //    {
-        //        Remove(item);
-        //    }
-        //}
+        public List<T> RemoveAll(List<T> entities)
+        {
+            var deletedEntities = new List<T>();
+            foreach (var item in entities)
+            {
+                var deletedEntitie = Remove(item);
+                deletedEntities.Add(deletedEntitie);
+            }
+
+            return deletedEntities;
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace Evacuation.Core.Services
 
         public async Task<EvacuationZoneResponse> GetEvacuationZoneByIdAsync(int id)
         {
-            var existingZone = await _unitOfWork.EvacuationZones.GetByIdAsync(id);
+            var existingZone = await _unitOfWork.EvacuationZones.FindByIdAsync(id);
             if (existingZone != null) 
                 throw new ArgumentException($"EvacuationZone not found.");
 
@@ -52,7 +52,7 @@ namespace Evacuation.Core.Services
 
         public async Task<EvacuationZoneResponse> UpdateEvacuationZoneAsync(int id, EvacuationZoneRequest req)
         {
-            var existingZone = await _unitOfWork.EvacuationZones.GetByIdAsync(id);
+            var existingZone = await _unitOfWork.EvacuationZones.FindByIdAsync(id);
             if (existingZone != null) 
                 throw new ArgumentException($"EvacuationZone not found.");
 
@@ -68,7 +68,7 @@ namespace Evacuation.Core.Services
 
         public async Task<EvacuationZoneResponse> DeleteEvacuationZoneAsync(int id)
         {
-            var existingZone = await _unitOfWork.EvacuationZones.GetByIdAsync(id);
+            var existingZone = await _unitOfWork.EvacuationZones.FindByIdAsync(id);
             if (existingZone != null) 
                 throw new ArgumentException($"EvacuationZone not found.");
 
