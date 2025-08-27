@@ -4,6 +4,7 @@ using Evacuation.Core.DTOs.Responses;
 using Evacuation.Core.Interfaces.Infrastructure.Caching;
 using Evacuation.Core.Interfaces.Infrastructure.Database;
 using Evacuation.Core.Interfaces.Services;
+using Evacuation.Domain.Entities;
 
 namespace Evacuation.Core.Services
 {
@@ -40,7 +41,7 @@ namespace Evacuation.Core.Services
             int zoneId = request.ZoneId;
             var zone = await _unitOfWork.EvacuationZones.FindByIdAsync(zoneId);
             var vehicle = await _unitOfWork.Vehicles.FindByIdAsync(request.VehicleId);
-            var plan = (await _unitOfWork.EvacuationPlans.FindByAsync(p => p.ZoneId.Equals(zoneId) && p.VehicleId.Equals(request.VehicleId))).FirstOrDefault();
+            var plan = (await _unitOfWork.EvacuationPlans.FindByAsync(p => p.ZoneId.Equals(zoneId) && p.VehicleId.Equals(request.VehicleId) && p.Active)).LastOrDefault();
 
             int evacuatedCount = Math.Min(zone.RemainingPeople, request.EvacueesMoved);
             zone.TotalEvacuated += evacuatedCount;
@@ -52,13 +53,27 @@ namespace Evacuation.Core.Services
             vehicle.IsAvailable = true;
             _unitOfWork.Vehicles.Update(vehicle);
             await _unitOfWork.SaveChangesAsync();
-            
+
             if (plan != null)
             {
-                plan.Completed = true;
-                plan.CompletedAt = DateTime.UtcNow;
-                _unitOfWork.EvacuationPlans.Update(plan);
+                var log = new EvacuationLogEntity
+                {
+                    ZoneId = zoneId,
+                    VehicleId = request.VehicleId,
+                    EstimatedArrivalMinutes = plan.EstimatedArrivalMinutes,
+                    NumberOfPeople = plan.NumberOfPeople,
+                    EvacuatedPeople = evacuatedCount,
+                    IsCompleted = true,
+                    CompletedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.EvacuationLogs.AddAsync(log);
                 await _unitOfWork.SaveChangesAsync();
+
+                //plan.Completed = true;
+                //plan.CompletedAt = DateTime.UtcNow;
+                //_unitOfWork.EvacuationPlans.Update(plan);
+                //await _unitOfWork.SaveChangesAsync();
             }
 
             string key = $"Z:{zoneId}:STATUS";

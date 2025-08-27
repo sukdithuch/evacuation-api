@@ -15,8 +15,8 @@ namespace Evacuation.Domain.Entities
         public VehicleEntity Vehicle { get; set; }
         public int EstimatedArrivalMinutes { get; set; }
         public int NumberOfPeople { get; set; }
-        public bool Completed { get; set; }
-        public DateTime? CompletedAt { get; set; }
+        //public bool Completed { get; set; }
+        //public DateTime? CompletedAt { get; set; }
         //public PlanStatus Status { get; set; }
     }
 

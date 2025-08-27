@@ -66,8 +66,8 @@ namespace Evacuation.Core.Services
                         VehicleId = bestVehicle.VehicleId,
                         EstimatedArrivalMinutes = Convert.ToInt32(eta),
                         NumberOfPeople = evacuatedCount,
-                        Completed = false,
-                        CompletedAt = null
+                        //Completed = false,
+                        //CompletedAt = null
                     };
 
                     var addedPlan = await _unitOfWork.EvacuationPlans.AddAsync(planEntity);

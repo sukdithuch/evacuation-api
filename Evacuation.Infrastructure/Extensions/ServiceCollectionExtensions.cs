@@ -27,6 +27,7 @@ namespace Evacuation.Infrastructure.Extensions
 
             // Repositories
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IEvacuationLogRepository, EvacuationLogRepository>();
             services.AddScoped<IEvacuationPlanRepository, EvacuationPlanRepository>();
             services.AddScoped<IEvacuationZoneRepository, EvacuationZoneRepository>();
             services.AddScoped<IVehicleRepository, VehicleRepository>();
