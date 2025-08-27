@@ -43,7 +43,11 @@ namespace Evacuation.Core.Services
             var vehicle = await _unitOfWork.Vehicles.FindByIdAsync(request.VehicleId);
             var plan = (await _unitOfWork.EvacuationPlans.FindByAsync(p => p.ZoneId.Equals(zoneId) && p.VehicleId.Equals(request.VehicleId) && p.Active)).LastOrDefault();
 
-            int evacuatedCount = Math.Min(zone.RemainingPeople, request.EvacueesMoved);
+            if (zone == null) throw new ArgumentNullException(nameof(zone));
+            if (vehicle == null) throw new ArgumentNullException(nameof(zone));
+            if (plan == null) throw new ArgumentNullException(nameof(zone));
+
+            int evacuatedCount = Math.Min(zone.RemainingPeople, request.EvacuatedPeople);
             zone.TotalEvacuated += evacuatedCount;
             zone.RemainingPeople -= evacuatedCount;
             zone.LastVehicleUsedId = request.VehicleId;

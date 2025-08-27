@@ -28,68 +28,89 @@ namespace Evacuation.Core.Services
             var plans = new List<EvacuationPlanResponse>();
 
             var zones = await _unitOfWork.EvacuationZones.GetAllActiveAsync();
-            var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync();     
-            
+            var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync(); 
+            var activePlans = await _unitOfWork.EvacuationPlans.GetAllActiveAsync();
+
             if (!zones.Any())
-                throw new ArgumentException("Not found zones.");
+                throw new InvalidOperationException("No zones found.");
 
             if (!vehicles.Any())
-                throw new ArgumentException("Not found vehicles.");
+                throw new InvalidOperationException("No vehicles found.");
 
-            var tempZones = _mapper.Map<List<EvacuationZoneEntity>>(zones);
-            var sortedZones = tempZones.OrderByDescending(z => z.UrgencyLevel).ToList();
-            while (sortedZones.Any(z => z.RemainingPeople > 0) && vehicles.Any(v => v.IsAvailable))
+            var clonedZones = zones.Select(z =>
             {
-                foreach (var zone in sortedZones)
+                var clone = _mapper.Map<EvacuationZoneEntity>(z);
+                clone.RemainingPeople -= activePlans
+                    .Where(p => p.ZoneId.Equals(z.ZoneId))
+                    .Sum(p => p.NumberOfPeople);
+
+                clone.RemainingPeople = Math.Max(0, clone.RemainingPeople);
+                return clone;
+            }).ToList();
+
+            var sortedZones = clonedZones.OrderByDescending(z => z.UrgencyLevel).ToList();
+
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                while (sortedZones.Any(z => z.RemainingPeople > 0) && vehicles.Any(v => v.IsAvailable))
                 {
-                    if (zone.RemainingPeople <= 0) continue;
-
-                    var vehiclesAvailable = vehicles.Where(v => v.IsAvailable).ToList();
-                    var bestVehicle = SelectBestVehicleForZone(vehiclesAvailable, zone);
-                    if (bestVehicle == null) break;
-
-                    bestVehicle.IsAvailable = false;
-                    _unitOfWork.Vehicles.Update(bestVehicle);
-                    await _unitOfWork.SaveChangesAsync();
-
-                    int evacuatedCount = Math.Min(zone.RemainingPeople, bestVehicle.Capacity);
-                    zone.TotalEvacuated += evacuatedCount;
-                    zone.RemainingPeople -= evacuatedCount;
-                    zone.LastVehicleUsedId = bestVehicle.VehicleId;
-
-                    double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, bestVehicle.Latitude, bestVehicle.Longitude);
-                    double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, bestVehicle.Speed);
-
-                    var planEntity = new EvacuationPlanEntity
+                    foreach (var zone in sortedZones)
                     {
-                        ZoneId = zone.ZoneId,
-                        VehicleId = bestVehicle.VehicleId,
-                        EstimatedArrivalMinutes = Convert.ToInt32(eta),
-                        NumberOfPeople = evacuatedCount,
-                        //Completed = false,
-                        //CompletedAt = null
-                    };
+                        if (zone.RemainingPeople <= 0) continue;
 
-                    var addedPlan = await _unitOfWork.EvacuationPlans.AddAsync(planEntity);
-                    await _unitOfWork.SaveChangesAsync();
-                    var plan = _mapper.Map<EvacuationPlanResponse>(addedPlan);
-                    plans.Add(plan);
+                        var vehiclesAvailable = vehicles.Where(v => v.IsAvailable).ToList();
+                        var bestVehicle = SelectBestVehicleForZone(vehiclesAvailable, zone);
+                        if (bestVehicle == null) break;
 
-                    string key = $"Z:{zone.ZoneId}:STATUS";
-                    var cacheStatus = await _cacheService.GetAsync<EvacuationStatusResponse>(key);
-                    if (cacheStatus == null)
-                    {
-                        var status = new EvacuationStatusResponse
+                        bestVehicle.IsAvailable = false;
+                        _unitOfWork.Vehicles.Update(bestVehicle);
+
+                        int evacuatedCount = Math.Min(zone.RemainingPeople, bestVehicle.Capacity);
+                        zone.RemainingPeople -= evacuatedCount;
+
+                        double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, bestVehicle.Latitude, bestVehicle.Longitude);
+                        double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, bestVehicle.Speed);
+
+                        var planEntity = new EvacuationPlanEntity
                         {
                             ZoneId = zone.ZoneId,
-                            TotalEvacuated = 0,
-                            RemainingPeople = zone.NumberOfPeople,
-                            LastVehicleUsedId = null
+                            VehicleId = bestVehicle.VehicleId,
+                            EstimatedArrivalMinutes = Convert.ToInt32(eta),
+                            NumberOfPeople = evacuatedCount,
                         };
-                        await _cacheService.SetAsync(key, status);
+
+                        var addedPlan = await _unitOfWork.EvacuationPlans.AddAsync(planEntity);
+                        var plan = _mapper.Map<EvacuationPlanResponse>(addedPlan);
+                        plans.Add(plan);
+
+                        string key = $"Z:{zone.ZoneId}:STATUS";
+                        var cacheStatus = await _cacheService.GetAsync<EvacuationStatusResponse>(key);
+                        if (cacheStatus == null)
+                        {
+                            var status = new EvacuationStatusResponse
+                            {
+                                ZoneId = zone.ZoneId,
+                                TotalEvacuated = 0,
+                                RemainingPeople = zone.NumberOfPeople,
+                                LastVehicleUsedId = null
+                            };
+                            await _cacheService.SetAsync(key, status);
+                        }
                     }
                 }
+
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
             }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
+
+            if (!plans.Any())
+                throw new InvalidOperationException("No suitable vehicle found for any zone.");
 
             return plans;
         }
@@ -110,18 +131,30 @@ namespace Evacuation.Core.Services
 
         private VehicleEntity SelectBestVehicleForZone(List<VehicleEntity> vehiclesAvailable, EvacuationZoneEntity zone)
         {
-            if (vehiclesAvailable.Count == 0)
+            if (!vehiclesAvailable.Any())
                 return null;
 
             VehicleEntity bestVehicle = vehiclesAvailable
-                .Select(v => new
+                .Select(v =>
                 {
-                    Vehicle = v,
-                    DistanceKm = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, v.Latitude, v.Longitude)
+                    double distance = GeoUtils.HaversineDistanceKm(zone.Latitude, zone.Longitude, v.Latitude, v.Longitude);
+                    double eta = GeoUtils.EstimatedTravelTimeMinutes(distance, v.Speed);
+                    int capacityDiff = v.Capacity - zone.RemainingPeople;
+
+                    return new
+                    {
+                        Vehicle = v,
+                        DistanceKm = distance,
+                        Eta = eta,
+                        CapacityDiff = capacityDiff
+                    };
                 })
+                .Where(x => x.Eta <= 60 &&
+                    (x.CapacityDiff <= 0 || 
+                    (x.CapacityDiff > 0 && x.CapacityDiff <= zone.RemainingPeople * 0.2)))
                 .OrderBy(x => x.DistanceKm)
-                .ThenBy(x => GeoUtils.EstimatedTravelTimeMinutes(x.DistanceKm, x.Vehicle.Speed))
-                .ThenBy(x => Math.Abs(x.Vehicle.Capacity - zone.NumberOfPeople))
+                .ThenBy(x => x.Eta)
+                .ThenBy(x => Math.Abs(x.CapacityDiff))
                 .FirstOrDefault()?.Vehicle;
 
             return bestVehicle; 

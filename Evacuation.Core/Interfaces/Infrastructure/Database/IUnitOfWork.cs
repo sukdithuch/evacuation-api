@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data;
 
 namespace Evacuation.Core.Interfaces.Infrastructure.Database
 {
@@ -13,5 +9,8 @@ namespace Evacuation.Core.Interfaces.Infrastructure.Database
         IEvacuationPlanRepository EvacuationPlans { get; }
         IEvacuationLogRepository EvacuationLogs { get; }
         Task<int> SaveChangesAsync();
+        Task BeginTransactionAsync();
+        Task CommitAsync();
+        Task RollbackAsync();
     }
 }
