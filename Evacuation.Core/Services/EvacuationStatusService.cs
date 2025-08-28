@@ -85,7 +85,6 @@ namespace Evacuation.Core.Services
                 };
                 await _cacheService.SetAsync(key, status);
 
-                await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
             }
             catch (Exception)

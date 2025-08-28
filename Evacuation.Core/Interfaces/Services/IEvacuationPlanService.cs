@@ -4,7 +4,7 @@ namespace Evacuation.Core.Interfaces.Services
 {
     public interface IEvacuationPlanService
     {
-        Task<List<EvacuationPlanResponse>> GeneratePlans();
+        Task<List<EvacuationPlanResponse>> GeneratePlansAsync();
         Task ClearPlansAsync();
     }
 }

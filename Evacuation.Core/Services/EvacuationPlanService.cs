@@ -23,7 +23,7 @@ namespace Evacuation.Core.Services
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
-        public async Task<List<EvacuationPlanResponse>> GeneratePlans()
+        public async Task<List<EvacuationPlanResponse>> GeneratePlansAsync()
         {
             var plans = new List<EvacuationPlanResponse>();
 
@@ -99,17 +99,16 @@ namespace Evacuation.Core.Services
                     }
                 }
 
-                await _unitOfWork.SaveChangesAsync();
+                if (!plans.Any()) 
+                    throw new ArgumentException("No suitable vehicle found for any zone.");
+
                 await _unitOfWork.CommitAsync();
             }
             catch (Exception)
             {
                 await _unitOfWork.RollbackAsync();
                 throw;
-            }
-
-            if (!plans.Any()) 
-                throw new ArgumentException("No suitable vehicle found for any zone.");
+            }            
 
             return plans;
         }
@@ -128,7 +127,6 @@ namespace Evacuation.Core.Services
                 _unitOfWork.EvacuationPlans.RemoveAll(plans);
                 await _cacheService.ClearAllAsync();
 
-                await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
             }
             catch (Exception)

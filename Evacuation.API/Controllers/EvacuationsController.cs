@@ -24,7 +24,7 @@ namespace Evacuation.API.Controllers
         {
             try
             {
-                var result = await _evacuationPlanService.GeneratePlans();
+                var result = await _evacuationPlanService.GeneratePlansAsync();
                 return Ok(result);
             }
             catch (ArgumentException ex)
