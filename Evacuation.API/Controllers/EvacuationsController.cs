@@ -27,6 +27,10 @@ namespace Evacuation.API.Controllers
                 var result = await _evacuationPlanService.GeneratePlans();
                 return Ok(result);
             }
+            catch (ArgumentException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, ex.Message);
+            }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
@@ -54,6 +58,10 @@ namespace Evacuation.API.Controllers
             {
                 await _evacuationStatusService.UpdateStatusAsync(req);
                 return Ok(true);
+            }
+            catch (ArgumentException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, ex.Message);
             }
             catch (Exception ex)
             {

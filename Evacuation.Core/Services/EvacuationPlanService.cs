@@ -31,11 +31,10 @@ namespace Evacuation.Core.Services
             var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync(); 
             var activePlans = await _unitOfWork.EvacuationPlans.GetAllActiveAsync();
 
-            if (!zones.Any())
-                throw new InvalidOperationException("No zones found.");
-
-            if (!vehicles.Any())
-                throw new InvalidOperationException("No vehicles found.");
+            if (!zones.Any()) 
+                throw new ArgumentException("No zones found.");
+            if (!vehicles.Any()) 
+                throw new ArgumentException("No vehicles found.");
 
             var clonedZones = zones.Select(z =>
             {
@@ -103,14 +102,14 @@ namespace Evacuation.Core.Services
                 await _unitOfWork.SaveChangesAsync();
                 await _unitOfWork.CommitAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 await _unitOfWork.RollbackAsync();
                 throw;
             }
 
-            if (!plans.Any())
-                throw new InvalidOperationException("No suitable vehicle found for any zone.");
+            if (!plans.Any()) 
+                throw new ArgumentException("No suitable vehicle found for any zone.");
 
             return plans;
         }
@@ -121,12 +120,22 @@ namespace Evacuation.Core.Services
             var vehicles = await _unitOfWork.Vehicles.GetAllActiveAsync();
             var plans = await _unitOfWork.EvacuationPlans.GetAllActiveAsync();
 
-            _unitOfWork.EvacuationZones.RemoveAll(zones);
-            _unitOfWork.Vehicles.RemoveAll(vehicles);
-            _unitOfWork.EvacuationPlans.RemoveAll(plans);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                _unitOfWork.EvacuationZones.RemoveAll(zones);
+                _unitOfWork.Vehicles.RemoveAll(vehicles);
+                _unitOfWork.EvacuationPlans.RemoveAll(plans);
+                await _cacheService.ClearAllAsync();
 
-            await _cacheService.ClearAllAsync();
+                await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
+            }
+            catch (Exception)
+            {
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
 
         private VehicleEntity SelectBestVehicleForZone(List<VehicleEntity> vehiclesAvailable, EvacuationZoneEntity zone)
@@ -159,14 +168,5 @@ namespace Evacuation.Core.Services
 
             return bestVehicle; 
         }
-
-        //private List<VehicleEntity> GetVehiclesOrderByDistance(List<VehicleEntity> vehicles, List<EvacuationZoneEntity> zones)
-        //{
-        //    var vehiclesSort = new List<EvacuationZoneEntity>();
-        //    foreach (var vehicle in vehicles)
-        //    {
-
-        //    }
-        //}
     }
 }

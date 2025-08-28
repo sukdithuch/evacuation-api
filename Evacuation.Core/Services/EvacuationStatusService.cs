@@ -43,23 +43,25 @@ namespace Evacuation.Core.Services
             var vehicle = await _unitOfWork.Vehicles.FindByIdAsync(request.VehicleId);
             var plan = (await _unitOfWork.EvacuationPlans.FindByAsync(p => p.ZoneId.Equals(zoneId) && p.VehicleId.Equals(request.VehicleId) && p.Active)).LastOrDefault();
 
-            if (zone == null) throw new ArgumentNullException(nameof(zone));
-            if (vehicle == null) throw new ArgumentNullException(nameof(zone));
-            if (plan == null) throw new ArgumentNullException(nameof(zone));
+            if (zone == null) 
+                throw new ArgumentException($"Zone {zoneId} not found.");
+            if (vehicle == null) 
+                throw new ArgumentException($"Vehicle {request.VehicleId} not found.");
+            if (plan == null) 
+                throw new ArgumentException($"Plan not found for zone {zoneId} and vehicle {request.VehicleId}.");
 
-            int evacuatedCount = Math.Min(zone.RemainingPeople, request.EvacuatedPeople);
-            zone.TotalEvacuated += evacuatedCount;
-            zone.RemainingPeople -= evacuatedCount;
-            zone.LastVehicleUsedId = request.VehicleId;
-            _unitOfWork.EvacuationZones.Update(zone);
-            await _unitOfWork.SaveChangesAsync();
-
-            vehicle.IsAvailable = true;
-            _unitOfWork.Vehicles.Update(vehicle);
-            await _unitOfWork.SaveChangesAsync();
-
-            if (plan != null)
+            await _unitOfWork.BeginTransactionAsync();
+            try
             {
+                int evacuatedCount = Math.Min(zone.RemainingPeople, request.EvacuatedPeople);
+                zone.TotalEvacuated += evacuatedCount;
+                zone.RemainingPeople -= evacuatedCount;
+                zone.LastVehicleUsedId = request.VehicleId;
+                _unitOfWork.EvacuationZones.Update(zone);
+
+                vehicle.IsAvailable = true;
+                _unitOfWork.Vehicles.Update(vehicle);
+
                 var log = new EvacuationLogEntity
                 {
                     ZoneId = zoneId,
@@ -72,23 +74,25 @@ namespace Evacuation.Core.Services
                 };
 
                 await _unitOfWork.EvacuationLogs.AddAsync(log);
+
+                string key = $"Z:{zoneId}:STATUS";
+                var status = new EvacuationStatusResponse
+                {
+                    ZoneId = zoneId,
+                    TotalEvacuated = zone.TotalEvacuated,
+                    RemainingPeople = zone.RemainingPeople,
+                    LastVehicleUsedId = zone.LastVehicleUsedId,
+                };
+                await _cacheService.SetAsync(key, status);
+
                 await _unitOfWork.SaveChangesAsync();
-
-                //plan.Completed = true;
-                //plan.CompletedAt = DateTime.UtcNow;
-                //_unitOfWork.EvacuationPlans.Update(plan);
-                //await _unitOfWork.SaveChangesAsync();
+                await _unitOfWork.CommitAsync();
             }
-
-            string key = $"Z:{zoneId}:STATUS";
-            var status = new EvacuationStatusResponse
+            catch (Exception)
             {
-                ZoneId = zoneId,
-                TotalEvacuated = zone.TotalEvacuated,
-                RemainingPeople = zone.RemainingPeople,
-                LastVehicleUsedId = zone.LastVehicleUsedId,
-            };
-            await _cacheService.SetAsync(key, status);
+                await _unitOfWork.RollbackAsync();
+                throw;
+            }
         }
     }
 }
