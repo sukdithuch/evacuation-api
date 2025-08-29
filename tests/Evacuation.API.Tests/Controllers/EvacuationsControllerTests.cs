@@ -109,9 +109,7 @@ namespace Evacuation.API.Tests.Controllers
         public async Task GetStatus_ReturnOk_WhenNoStatuses()
         {
             // Arrange
-            var statusesMock = new List<EvacuationStatusResponse>();
-
-            _statusServiceMock.Setup(s => s.GetStatusesAsync()).ReturnsAsync(statusesMock);
+            _statusServiceMock.Setup(s => s.GetStatusesAsync()).ReturnsAsync(new List<EvacuationStatusResponse>());
 
             // Act
             var result = await _controller.GetStatus();
@@ -140,11 +138,10 @@ namespace Evacuation.API.Tests.Controllers
         }
 
         [Fact]
-        public async Task UpdateStatus_ReturnOk_WhenUpdateSuccessful()
+        public async Task UpdateStatus_ReturnOk_WhenValidRequest()
         {
             // Arrange
             var request = new EvacuationStatusRequest { ZoneId = 1, VehicleId = 2, EvacuatedPeople = 20 };
-
             _statusServiceMock.Setup(s => s.UpdateStatusAsync(request)).Returns(Task.CompletedTask);
 
             // Act
@@ -157,11 +154,25 @@ namespace Evacuation.API.Tests.Controllers
         }
 
         [Fact]
+        public async Task UpdateStatus_ReturnBadRequest_WhenInvalidRequest()
+        {
+            // Arrange
+             var request = new EvacuationStatusRequest();
+            _controller.ModelState.AddModelError("ZoneId", "The ZoneId field is required.");           
+
+            //Act
+            var result = await _controller.UpdateStatus(request);
+
+            //Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            _statusServiceMock.Verify(s => s.UpdateStatusAsync(request), Times.Never);
+        }
+
+        [Fact]
         public async Task UpdateStatus_ReturnNotFound_WhenArgumentExceptionThrow()
         {
             // Arrange
             var request = new EvacuationStatusRequest { ZoneId = 1, VehicleId = 2, EvacuatedPeople = 20 };
-
             _statusServiceMock.Setup(s => s.UpdateStatusAsync(request)).ThrowsAsync(new ArgumentException("Zone 1 not found."));
 
             // Act
@@ -178,8 +189,7 @@ namespace Evacuation.API.Tests.Controllers
         public async Task UpdateStatus_ReturnInternalServerError_WhenExceptionThrow()
         {
             // Arrange
-            var request = new EvacuationStatusRequest { ZoneId = 1, VehicleId = 2, EvacuatedPeople = 20 };
-
+            var request = new EvacuationStatusRequest();
             _statusServiceMock.Setup(s => s.UpdateStatusAsync(request)).ThrowsAsync(new Exception("Server error."));
 
             // Act

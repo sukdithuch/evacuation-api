@@ -56,6 +56,11 @@ namespace Evacuation.API.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 await _evacuationStatusService.UpdateStatusAsync(req);
                 return Ok(true);
             }

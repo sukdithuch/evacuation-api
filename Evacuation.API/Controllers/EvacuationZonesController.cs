@@ -34,6 +34,11 @@ namespace Evacuation.API.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var result = await _evacuationZoneService.CreateEvacuationZoneAsync(req);
                 return Ok(result);
             }

@@ -62,19 +62,6 @@ namespace Evacuation.Infrastructure.Caching
             keys.Add(key);
             var serialized = JsonSerializer.Serialize(keys);
             await _distributedCache.SetStringAsync(AllKeys, serialized);
-
-            //if (allKeyValue?.Any() == false)
-            //{
-            //    var serialized = JsonSerializer.Serialize(key);
-            //    await _distributedCache.SetStringAsync(allKey, serialized);
-            //}
-            //else
-            //{
-            //    // ต้องเช็คซ้ำเพิ่ม
-            //    allKeyValue += "," + allKeyValue;
-            //    var serialized = JsonSerializer.Serialize(allKeyValue);
-            //    await _distributedCache.SetStringAsync(allKey, serialized);
-            //}
         }        
     }
 }

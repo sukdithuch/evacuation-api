@@ -35,6 +35,11 @@ namespace Evacuation.API.Controllers
         {
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
                 var result = await _vehicleService.CreateVehicleAsync(req);
                 return Ok(result);
             }

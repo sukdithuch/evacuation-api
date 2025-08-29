@@ -27,10 +27,31 @@ namespace Evacuation.Core.Services
         {
             var statuses = new List<EvacuationStatusResponse>();
             var keys = await _cacheService.GetAllKeysAsync();
-            foreach(var key in keys)
+            var statusKeys = keys.Where(k => k.Contains("STATUS"));
+            if (statusKeys.Any())
             {
-                var status = await _cacheService.GetAsync<EvacuationStatusResponse>(key);
-                statuses.Add(status);
+                foreach (var key in statusKeys)
+                {
+                    var status = await _cacheService.GetAsync<EvacuationStatusResponse>(key);
+                    statuses.Add(status);
+                }
+            }
+            else
+            {
+                var zones = await _unitOfWork.EvacuationZones.GetAllActiveAsync();
+                foreach (var zone in zones)
+                {
+                    string key = $"Z:{zone.ZoneId}:STATUS";
+                    var status = new EvacuationStatusResponse
+                    {
+                        ZoneId = zone.ZoneId,
+                        TotalEvacuated = zone.TotalEvacuated,
+                        RemainingPeople = zone.RemainingPeople,
+                        LastVehicleUsedId = zone.LastVehicleUsedId,
+                    };
+                    await _cacheService.SetAsync(key, status);
+                    statuses.Add(status);
+                }
             }
 
             return statuses;
