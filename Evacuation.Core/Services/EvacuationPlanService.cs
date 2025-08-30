@@ -52,7 +52,8 @@ namespace Evacuation.Core.Services
             await _unitOfWork.BeginTransactionAsync();
             try
             {
-                while (sortedZones.Any(z => z.RemainingPeople > 0) && vehicles.Any(v => v.IsAvailable))
+                var excludedZoneIds = new HashSet<int>();
+                while (sortedZones.Any(z => z.RemainingPeople > 0) && vehicles.Any(v => v.IsAvailable) && excludedZoneIds.Count < sortedZones.Count)
                 {
                     foreach (var zone in sortedZones)
                     {
@@ -60,7 +61,11 @@ namespace Evacuation.Core.Services
 
                         var vehiclesAvailable = vehicles.Where(v => v.IsAvailable).ToList();
                         var bestVehicle = SelectBestVehicleForZone(vehiclesAvailable, zone);
-                        if (bestVehicle == null) break;
+                        if (bestVehicle == null)
+                        {
+                            excludedZoneIds.Add(zone.ZoneId);
+                            break;
+                        }
 
                         bestVehicle.IsAvailable = false;
                         _unitOfWork.Vehicles.Update(bestVehicle);
