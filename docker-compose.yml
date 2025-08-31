@@ -1,0 +1,29 @@
+services:
+  evacuation.api:
+    image: ${DOCKER_REGISTRY-}evacuationapi
+    container_name: evacuation.api
+    build:
+      context: .
+      dockerfile: Evacuation.API/Dockerfile
+    ports:
+        - "5000:5000"
+        - "5001:5001"
+  
+  evacuation.database:
+    image: postgres:latest
+    container_name: evacuation.database
+    environment:
+        - POSTGRES_DB=db_evacuation
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=1234 
+    volumes:
+        - ./.containers/evacuation-db:/var/lib/postgresql/data
+    ports:
+        - 5432:5432
+
+  evacuation.redis:
+    image: redis:latest
+    container_name: evacuation.redis
+    restart: always
+    ports:
+        - "6379:6379"

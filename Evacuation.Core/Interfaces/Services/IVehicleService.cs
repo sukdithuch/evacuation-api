@@ -1,0 +1,15 @@
+﻿using Evacuation.Core.DTOs.Requests;
+using Evacuation.Core.DTOs.Responses;
+
+namespace Evacuation.Core.Interfaces.Services
+{
+    public interface IVehicleService
+    {
+        Task<List<VehicleResponse>> GetVehiclesAsync();
+        Task<List<VehicleResponse>> GetActiveVehiclesAsync();
+        Task<VehicleResponse> GetVehicleByIdAsync(int id);
+        Task<VehicleResponse> CreateVehicleAsync(VehicleRequest req);
+        Task<VehicleResponse> UpdateVehicleAsync(int id, VehicleRequest req);
+        Task<VehicleResponse> DeleteVehicleAsync(int id);
+    }
+}
