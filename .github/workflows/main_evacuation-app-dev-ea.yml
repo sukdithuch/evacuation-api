@@ -16,6 +16,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install dependencies
+      run: dotnet restore ./Evacuation.sln
+
+    - name: Build solution
+      run: dotnet build ./Evacuation.sln --no-restore --configuration Release
+
+    - name: Test with the dotnet CLI
+      run: dotnet test ./Evacuation.sln --no-build --configuration Release --logger "trx;LogFileName=test_results.trx"
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
