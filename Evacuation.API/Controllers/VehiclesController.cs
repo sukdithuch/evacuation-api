@@ -1,6 +1,5 @@
 ﻿using Evacuation.Core.DTOs.Requests;
 using Evacuation.Core.Interfaces.Services;
-using Evacuation.Infrastructure.Database.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Evacuation.API.Controllers

@@ -61,8 +61,6 @@ namespace Evacuation.Core.Services
             existingVehicle.Latitude = req.Latitude;
             existingVehicle.Longitude = req.Longitude;
             existingVehicle.Speed = req.Speed;
-            //existingVehicle.IsAvailable = req.IsAvailable;
-            //existingVehicle.Status = Enum.Parse<VehicleStatus>(req.Status);
             existingVehicle = _unitOfWork.Vehicles.Update(existingVehicle);
             await _unitOfWork.SaveChangesAsync();
 

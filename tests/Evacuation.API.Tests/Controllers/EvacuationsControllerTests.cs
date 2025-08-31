@@ -21,7 +21,7 @@ namespace Evacuation.API.Tests.Controllers
         }
 
         [Fact]
-        public void EvacuationsControllerConstructor_ShouldReturnNullException_WhenServiceIsNull()
+        public void EvacuationsControllerConstructor_ShouldThrowArgumentNullException_WhenServiceIsNull()
         {
             // Arrange
             IEvacuationPlanService? planService = null;

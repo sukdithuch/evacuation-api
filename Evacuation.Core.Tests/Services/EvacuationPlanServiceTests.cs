@@ -2,7 +2,6 @@
 using Evacuation.Core.DTOs.Responses;
 using Evacuation.Core.Interfaces.Infrastructure.Caching;
 using Evacuation.Core.Interfaces.Infrastructure.Database;
-using Evacuation.Core.Interfaces.Services;
 using Evacuation.Core.Services;
 using Evacuation.Domain.Entities;
 using Moq;
@@ -30,7 +29,7 @@ namespace Evacuation.Core.Tests.Services
         }
 
         [Fact]
-        public void EvacuationPlanServiceConstructor_ShouldReturnNullException_WhenUnitOfWorkIsNull()
+        public void EvacuationPlanServiceConstructor_ShouldThrowArgumentNullException_WhenUnitOfWorkIsNull()
         {
             // Arrange
             IUnitOfWork? unitOfWork = null;
@@ -40,7 +39,7 @@ namespace Evacuation.Core.Tests.Services
         }
 
         [Fact]
-        public void EvacuationPlanServiceConstructor_ShouldReturnNullException_WhenMapperIsNull()
+        public void EvacuationPlanServiceConstructor_ShouldThrowArgumentNullException_WhenMapperIsNull()
         {
             // Arrange
             IMapper? mapper = null;
@@ -50,7 +49,7 @@ namespace Evacuation.Core.Tests.Services
         }
 
         [Fact]
-        public void EvacuationPlanServiceConstructor_ShouldReturnNullException_WhenCacheIsNull()
+        public void EvacuationPlanServiceConstructor_ShouldThrowArgumentNullException_WhenCacheIsNull()
         {
             // Arrange
             ICacheService? cacheService = null;
@@ -60,7 +59,7 @@ namespace Evacuation.Core.Tests.Services
         }
 
         [Fact]
-        public async Task GeneratePlansAsync_ReturnPlans_WhenBestVehicleExist()
+        public async Task GeneratePlansAsync_ReturnsPlans_WhenBestVehicleExist()
         {
             // Arrange
             var zonesMock = new List<EvacuationZoneEntity>

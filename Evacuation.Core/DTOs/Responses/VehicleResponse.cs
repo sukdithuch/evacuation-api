@@ -1,9 +1,4 @@
 ﻿using Evacuation.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Evacuation.Core.DTOs.Responses
 {
@@ -16,6 +11,5 @@ namespace Evacuation.Core.DTOs.Responses
         public double Longitude { get; set; }
         public double Speed { get; set; }
         public bool IsAvailable { get; set; }
-        //public string Status { get; set; }
     }
 }

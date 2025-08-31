@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-namespace Evacuation.Core.Interfaces.Infrastructure.Database
+﻿namespace Evacuation.Core.Interfaces.Infrastructure.Database
 {
     public interface IUnitOfWork
     {

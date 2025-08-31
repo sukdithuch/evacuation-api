@@ -1,11 +1,6 @@
 ﻿using Evacuation.Domain.Entities;
 using Evacuation.Infrastructure.Database.Configurations;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Evacuation.Infrastructure.Database
 {

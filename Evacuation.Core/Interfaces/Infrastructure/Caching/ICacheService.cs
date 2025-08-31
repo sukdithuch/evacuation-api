@@ -1,5 +1,4 @@
-﻿
-namespace Evacuation.Core.Interfaces.Infrastructure.Caching
+﻿namespace Evacuation.Core.Interfaces.Infrastructure.Caching
 {
     public interface ICacheService
     {

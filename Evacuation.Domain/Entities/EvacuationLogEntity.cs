@@ -1,5 +1,4 @@
-﻿
-namespace Evacuation.Domain.Entities
+﻿namespace Evacuation.Domain.Entities
 {
     public class EvacuationLogEntity : BaseEntity, IBaseEntity
     {

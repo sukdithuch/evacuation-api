@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Evacuation.Domain.Entities
+﻿namespace Evacuation.Domain.Entities
 {
     public class EvacuationPlanEntity : BaseEntity, IBaseEntity
     {
@@ -15,15 +9,5 @@ namespace Evacuation.Domain.Entities
         public VehicleEntity Vehicle { get; set; }
         public int EstimatedArrivalMinutes { get; set; }
         public int NumberOfPeople { get; set; }
-        //public bool Completed { get; set; }
-        //public DateTime? CompletedAt { get; set; }
-        //public PlanStatus Status { get; set; }
-    }
-
-    public enum PlanStatus
-    {
-        Assigned,
-        InProgress,
-        Completed
     }
 }

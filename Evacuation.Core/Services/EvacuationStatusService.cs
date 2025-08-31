@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Evacuation.Core.DTOs.Requests;
+﻿using Evacuation.Core.DTOs.Requests;
 using Evacuation.Core.DTOs.Responses;
 using Evacuation.Core.Interfaces.Infrastructure.Caching;
 using Evacuation.Core.Interfaces.Infrastructure.Database;
@@ -11,15 +10,12 @@ namespace Evacuation.Core.Services
     public class EvacuationStatusService : IEvacuationStatusService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
 
         public EvacuationStatusService(IUnitOfWork unitOfWork,
-            IMapper mapper,
             ICacheService cacheService)
         {
             _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 

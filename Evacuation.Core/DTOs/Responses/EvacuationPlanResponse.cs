@@ -1,11 +1,4 @@
-﻿using Evacuation.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Evacuation.Core.DTOs.Responses
+﻿namespace Evacuation.Core.DTOs.Responses
 {
     public class EvacuationPlanResponse
     {

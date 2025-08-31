@@ -19,7 +19,7 @@ namespace Evacuation.API.Tests.Controllers
         }
 
         [Fact]
-        public void EvacuationZonesControllerConstructor_ShouldReturnNullException_WhenServiceIsNull()
+        public void EvacuationZonesControllerConstructor_ShouldThrowArgumentNullException_WhenServiceIsNull()
         {
             // Arrange
             IEvacuationZoneService? zoneService = null;

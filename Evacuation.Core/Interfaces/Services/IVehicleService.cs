@@ -1,10 +1,5 @@
 ﻿using Evacuation.Core.DTOs.Requests;
 using Evacuation.Core.DTOs.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Evacuation.Core.Interfaces.Services
 {

@@ -1,6 +1,4 @@
-﻿
-
-namespace Evacuation.Core.DTOs.Requests
+﻿namespace Evacuation.Core.DTOs.Requests
 {
     public class EvacuationStatusRequest
     {
