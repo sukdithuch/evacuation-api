@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Evacuation.Core\Evacuation.Core.csproj" />
+    <ProjectReference Include="..\..\Evacuation.Core\Evacuation.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

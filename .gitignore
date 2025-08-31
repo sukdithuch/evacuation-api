@@ -417,3 +417,9 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# Docker volumes / temporary data
+.containers/
+.containers/evacuation-db
+*.tar
+docker-compose.override.yml
