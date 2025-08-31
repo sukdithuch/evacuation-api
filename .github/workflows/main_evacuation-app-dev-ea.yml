@@ -1,0 +1,51 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - evacuation-app-dev-ea
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: 'ubuntu-latest'
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Log in to registry
+      uses: docker/login-action@v2
+      with:
+        registry: https://evacutioncontainer.azurecr.io/
+        username: ${{ secrets.AzureAppService_ContainerUsername_3872a3dd65f943ecb0a52b2195d58d6c }}
+        password: ${{ secrets.AzureAppService_ContainerPassword_938a12fa0e01454eae4127dba789fbad }}
+
+    - name: Build and push container image to registry
+      uses: docker/build-push-action@v3
+      with:
+        push: true
+        tags: evacutioncontainer.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_3872a3dd65f943ecb0a52b2195d58d6c }}/evacutioncontainer/evacuationapi:${{ github.sha }}
+        file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+
+    steps:
+    - name: Deploy to Azure Web App
+      id: deploy-to-webapp
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'evacuation-app-dev-ea'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AzureAppService_PublishProfile_8e35f554cdb445d0a4c18abcb816c69b }}
+        images: 'evacutioncontainer.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_3872a3dd65f943ecb0a52b2195d58d6c }}/evacutioncontainer/evacuationapi:${{ github.sha }}'
