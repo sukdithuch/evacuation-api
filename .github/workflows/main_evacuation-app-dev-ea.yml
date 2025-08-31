@@ -31,7 +31,7 @@ jobs:
       with:
         push: true
         tags: evacutioncontainer.azurecr.io/${{ secrets.AzureAppService_ContainerUsername_3872a3dd65f943ecb0a52b2195d58d6c }}/evacutioncontainer/evacuationapi:${{ github.sha }}
-        file: ./Dockerfile
+        file: ./Evacuation.API/Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
