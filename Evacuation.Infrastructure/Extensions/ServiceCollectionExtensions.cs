@@ -34,5 +34,14 @@ namespace Evacuation.Infrastructure.Extensions
 
             return services;
         }
+
+        public static void ApplyMigration(IServiceProvider serviceProvider)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<DataContext>();
+
+            Console.WriteLine(db.Database.GetConnectionString());
+            db.Database.Migrate();
+        }
     }
 }

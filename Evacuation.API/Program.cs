@@ -28,10 +28,12 @@ namespace Evacuation.API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            //if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+
+                Infrastructure.Extensions.ServiceCollectionExtensions.ApplyMigration(app.Services);
             }
 
             app.UseHttpsRedirection();
